@@ -16,16 +16,14 @@ type Task struct {
 const TaskFile = "tasks.json"
 
 func main() {
-	fmt.Println("Hello")
-
 	for {
-		fmt.Println("Welcome to Project Task Manager\n")
-		fmt.Println("1. Add Task")
-		fmt.Println("2. View Tasks")
-		fmt.Println("3. Delete Task")
-		fmt.Println("4. Mark Task as Completed")
-		fmt.Println("5. Exit")
-		fmt.Println("Enter your choice")
+		fmt.Println("\n\nWelcome to Project Task Manager")
+		fmt.Println("\t1. Add Task")
+		fmt.Println("\t2. View Tasks")
+		fmt.Println("\t3. Delete Task")
+		fmt.Println("\t4. Mark Task as Completed")
+		fmt.Println("\t5. Exit")
+		fmt.Println("Enter your choice: ")
 
 		reader := bufio.NewReader(os.Stdin)
 		ch, _ := reader.ReadString('\n')
@@ -37,6 +35,7 @@ func main() {
 			addTask()
 		case "2":
 			fmt.Println("View")
+			viewTasks()
 		case "3":
 			fmt.Println("Delete")
 		case "4":
@@ -92,8 +91,32 @@ func addTask() {
 		fmt.Printf("Error loading tasks: %v\n", err)
 		return
 	}
+
+	//
+	tasks = append(tasks, Task{Description: description, Completed: false})
+
 	err = saveTasks(tasks)
 	if err != nil {
 		fmt.Errorf("Failed %w", err)
+	}
+}
+
+func viewTasks() {
+	tasks, err := loadTask()
+	if err != nil {
+		fmt.Errorf("Failed loading tasks: %w", err)
+		return
+	}
+
+	if len(tasks) == 0 {
+		fmt.Println("No task found...")
+		return
+	}
+
+	fmt.Println("\n\n")
+	fmt.Printf("%-5s %-30s %s\n", "ID", "Description", "Completed")
+	fmt.Println("-------------------------------------------------")
+	for i, task := range tasks {
+		fmt.Printf("%-5d %-30s %t\n", i+1, task.Description, task.Completed)
 	}
 }

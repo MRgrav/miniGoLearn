@@ -42,6 +42,7 @@ func main() {
 			deleteTasks()
 		case "4":
 			fmt.Println("Complete")
+			markTaskAsComplete()
 		case "5":
 			fmt.Println("exit")
 			os.Exit(0)
@@ -142,11 +143,6 @@ func deleteTasks() {
 	option, _ := reader.ReadString('\n')
 	option = strings.TrimSpace(option)
 
-	if option == "0" {
-		fmt.Println("No task found")
-		return
-	}
-
 	id, err := strconv.Atoi(option)
 
 	if err != nil || len(tasks) < id || id < 1 {
@@ -154,11 +150,48 @@ func deleteTasks() {
 		return
 	}
 
-	// deletedTask := tasks[id]
-	fmt.Printf("Task ID : %d deleted successfully.\n", id)
 	tasks = append(tasks[:id-1], tasks[id:]...)
-	saveTasks(tasks)
+	err = saveTasks(tasks)
+	if err != nil {
+		fmt.Errorf("Failed to delete task id: %d, \nerror: %w", id, err)
+		return
+	}
+	fmt.Printf("Task ID : %d deleted successfully.\n", id)
+
+}
+
+func markTaskAsComplete() {
+	tasks, err := loadTask()
+	if err != nil {
+		fmt.Errorf("Failed to load tasks: %w", err)
+		return
+	}
+
+	if len(tasks) == 0 {
+		fmt.Println("No task found")
+		return
+	}
 
 	viewTasks()
 
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Enter the task id to mark as complete: ")
+	option, err := reader.ReadString('\n')
+	option = strings.TrimSpace(option)
+
+	id, err := strconv.Atoi(option)
+
+	if err != nil || id < 1 || id > len(tasks) {
+		fmt.Println("Invalid Task id.\n")
+		return
+	}
+
+	tasks[id-1].Completed = true
+
+	err = saveTasks(tasks)
+	if err != nil {
+		fmt.Errorf("Failed to update task id: %d, \nerror: %w", id, err)
+		return
+	}
+	fmt.Printf("Task ID : %d marked as complete.", id)
 }

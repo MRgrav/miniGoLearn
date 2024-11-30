@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -38,6 +39,7 @@ func main() {
 			viewTasks()
 		case "3":
 			fmt.Println("Delete")
+			deleteTasks()
 		case "4":
 			fmt.Println("Complete")
 		case "5":
@@ -119,4 +121,44 @@ func viewTasks() {
 	for i, task := range tasks {
 		fmt.Printf("%-5d %-30s %t\n", i+1, task.Description, task.Completed)
 	}
+}
+
+func deleteTasks() {
+	tasks, err := loadTask()
+	if err != nil {
+		fmt.Errorf("Failed loading tasks: %w", err)
+		return
+	}
+
+	if len(tasks) == 0 {
+		fmt.Println("No Tasks found.")
+		return
+	}
+
+	viewTasks()
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Enter the ID of the task to delete: ")
+	option, _ := reader.ReadString('\n')
+	option = strings.TrimSpace(option)
+
+	if option == "0" {
+		fmt.Println("No task found")
+		return
+	}
+
+	id, err := strconv.Atoi(option)
+
+	if err != nil || len(tasks) < id || id < 1 {
+		fmt.Println("Invalid task id.n\nSelect again...")
+		return
+	}
+
+	// deletedTask := tasks[id]
+	fmt.Printf("Task ID : %d deleted successfully.\n", id)
+	tasks = append(tasks[:id-1], tasks[id:]...)
+	saveTasks(tasks)
+
+	viewTasks()
+
 }
